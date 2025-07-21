@@ -1,0 +1,22 @@
+version: "3.1"
+
+actions:
+  - list_contacts
+
+slots:
+  contacts_list:
+    type: text
+    mappings:
+      - type: controlled
+
+responses:
+  utter_no_contacts:
+    - text: "You have no contacts in your list."
+      translation:
+        es: "No tienes contactos en tu lista."
+        de: "Du hast keine Kontakte in deiner Liste."
+  utter_list_contacts:
+    - text: "You currently have the following contacts:\n{contacts_list}"
+      translation:
+        es: "Actualmente tienes los siguientes contactos:\n{contacts_list}"
+        de: "Du hast derzeit die folgenden Kontakte:\n{contacts_list}"

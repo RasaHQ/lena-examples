@@ -1,0 +1,74 @@
+version: "3.1"
+
+actions:
+  - add_contact
+
+slots:
+  add_contact_confirmation:
+    type: bool
+    mappings:
+      - type: from_llm
+  add_contact_name:
+    type: text
+    mappings:
+      - type: from_llm
+  add_contact_handle:
+    type: text
+    mappings:
+      - type: from_llm
+
+responses:
+  utter_ask_add_contact_confirmation:
+    - text: Do you want to add {add_contact_name}({add_contact_handle}) to your contacts?
+      translation:
+        es: "¿Quieres añadir a {add_contact_name}({add_contact_handle}) a tus contactos?"
+        de: "Möchtest du {add_contact_name}({add_contact_handle}) zu deinen Kontakten hinzufügen?"
+      buttons:
+        - title: Yes
+          payload: "/SetSlots(add_contact_confirmation=true)"
+          translation:
+            es: 
+              title: "Sí"
+              payload: "/SetSlots(add_contact_confirmation=true)"
+            de: 
+              title: "Ja"
+              payload: "/SetSlots(add_contact_confirmation=true)"
+        - title: No, cancel
+          payload: "/SetSlots(add_contact_confirmation=false)"
+          translation:
+            es: 
+              title: "No, cancelar"
+              payload: "/SetSlots(add_contact_confirmation=false)"
+            de: 
+              title: "Nein, abbrechen"
+              payload: "/SetSlots(add_contact_confirmation=false)"
+  utter_ask_add_contact_handle:
+    - text: What's the handle of the user you want to add?
+      translation:
+        es: "¿Cuál es el identificador del usuario que quieres añadir?"
+        de: "Wie lautet der Handle des Benutzers, den du hinzufügen möchtest?"
+  utter_ask_add_contact_name:
+    - text: What's the name of the user you want to add?
+      translation:
+        es: "¿Cuál es el nombre del usuario que quieres añadir?"
+        de: "Wie lautet der Name des Benutzers, den du hinzufügen möchtest?"
+  utter_add_contact_error:
+    - text: "Something went wrong, please try again."
+      translation:
+        es: "Algo salió mal, por favor intenta de nuevo."
+        de: "Etwas ist schief gelaufen, bitte versuche es erneut."
+  utter_add_contact_cancelled:
+    - text: "Okay, I am cancelling this adding of a contact."
+      translation:
+        es: "Okay, estoy cancelando la adición de un contacto."
+        de: "Okay, ich breche das Hinzufügen eines Kontakts ab."
+  utter_contact_already_exists:
+    - text: "There's already a contact with that handle in your list."
+      translation:
+        es: "Ya hay un contacto con ese identificador en tu lista."
+        de: "Es gibt bereits einen Kontakt mit diesem Handle in deiner Liste."
+  utter_contact_added:
+    - text: "Contact added successfully."
+      translation:
+        es: "Contacto añadido exitosamente."
+        de: "Kontakt erfolgreich hinzugefügt."

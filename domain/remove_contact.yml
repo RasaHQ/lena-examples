@@ -1,0 +1,69 @@
+version: "3.1"
+
+actions:
+  - remove_contact
+
+slots:
+  remove_contact_name:
+    type: text
+    mappings:
+      - type: controlled
+  remove_contact_handle:
+    type: text
+    mappings:
+      - type: from_llm
+  remove_contact_confirmation:
+    type: text
+    mappings:
+      - type: from_llm
+
+responses:
+  utter_ask_remove_contact_handle:
+    - text: What's the handle of the user you want to remove?
+      translation:
+        es: "¿Cuál es el identificador del usuario que quieres eliminar?"
+        de: "Wie lautet der Handle des Benutzers, den du entfernen möchtest?"
+  utter_contact_not_in_list:
+    - text: "That contact is not in your list."
+      translation:
+        es: "Ese contacto no está en tu lista."
+        de: "Dieser Kontakt ist nicht in deiner Liste."
+  utter_remove_contact_error:
+    - text: "Something went wrong, please try again."
+      translation:
+        es: "Algo salió mal, por favor intenta de nuevo."
+        de: "Etwas ist schief gelaufen, bitte versuche es erneut."
+  utter_remove_contact_success:
+    - text: "Removed {remove_contact_handle}({remove_contact_name}) from your contacts."
+      translation:
+        es: "Eliminé {remove_contact_handle}({remove_contact_name}) de tus contactos."
+        de: "Ich habe {remove_contact_handle}({remove_contact_name}) aus deinen Kontakten entfernt."
+  utter_ask_remove_contact_confirmation:
+    - text: "Should I remove {remove_contact_handle} from your contact list?"
+      translation:
+        es: "¿Debería eliminar {remove_contact_handle} de tu lista de contactos?"
+        de: "Soll ich {remove_contact_handle} aus deiner Kontaktliste entfernen?"
+      buttons:
+        - title: Yes
+          payload: "/SetSlots(remove_contact_confirmation=true)"
+          translation:
+            es: 
+              title: "Sí"
+              payload: "/SetSlots(remove_contact_confirmation=true)"
+            de: 
+              title: "Ja"
+              payload: "/SetSlots(remove_contact_confirmation=true)"
+        - title: No, cancel the removal
+          payload: "/SetSlots(remove_contact_confirmation=false)"
+          translation:
+            es: 
+              title: "No, cancelar la eliminación"
+              payload: "/SetSlots(remove_contact_confirmation=false)"
+            de: 
+              title: "Nein, Abbruch der Entfernung"
+              payload: "/SetSlots(remove_contact_confirmation=false)"
+  utter_remove_contact_cancelled:
+    - text: "Okay, I am cancelling this removal of a contact."
+      translation:
+        es: "Está bien, estoy cancelando la eliminación de un contacto."
+        de: "Okay, ich breche die Entfernung eines Kontakts ab."

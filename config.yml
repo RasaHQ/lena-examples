@@ -1,0 +1,16 @@
+# The config recipe.
+recipe: default.v1
+language: en
+additional_languages:
+  - es
+  - de
+pipeline:
+- name: CompactLLMCommandGenerator
+  llm:
+    model_group: openai-gpt-4o
+
+# Configuration for Rasa Core.
+policies:
+- name: FlowPolicy
+
+assistant_id: multilingual_init

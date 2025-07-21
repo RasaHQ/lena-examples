@@ -1,0 +1,44 @@
+version: "3.1"
+
+slots:
+  return_value:
+    type: any
+    mappings:
+      - type: controlled
+
+responses:
+  utter_ask_language:
+    - text: "Which language would you like to use?"
+      metadata:
+        rephrase: False
+      translation:
+        es: "¿Qué idioma te gustaría usar?"
+        de: "Welche Sprache möchtest du verwenden?"
+      buttons:
+        - payload: "/SetSlots(language=es)"
+          title: "Spanish"
+          translation:
+            es:
+              payload: "/SetSlots(language=es)"
+              title: "Español"
+            de: 
+              payload: "/SetSlots(language=es)"
+              title: "Spanisch"
+        - payload: "/SetSlots(language=en)"
+          title: "English"
+          translation:
+            es:
+              payload: "/SetSlots(language=en)"
+              title: "Inglés"
+            de: 
+              payload: "/SetSlots(language=en)"
+              title: "Englisch"
+        - payload: "/SetSlots(language=de)"
+          title: "German"
+          translation:
+            es:
+              payload: "/SetSlots(language=de)"
+              title: "Alemán"
+            de: 
+              payload: "/SetSlots(language=de)"
+              title: "Deutsch"
