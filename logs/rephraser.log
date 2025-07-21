@@ -1,0 +1,37 @@
+2025-07-21 11:03:54 DEBUG    rasa.core.processor  - Predicted next action 'utter_ask_add_contact_handle' with confidence 1.00.
+2025-07-21 11:03:54 DEBUG    rasa.utils.log_utils  - [debug    ] nlg.rephrase.prompt_rendered   prompt=The following is a conversation with
+an AI assistant. The assistant is helpful, creative, clever, and very friendly.
+Rephrase the suggested AI response staying close to the original message and retaining
+its meaning. Use simple German.
+
+Context / previous conversation with the user:
+USER: ich möchte Kontakt hinzufügen
+
+Last user message:
+USER: ich möchte Kontakt hinzufügen
+
+Suggested AI Response: What's the handle of the user you want to add?
+
+Rephrased AI Response:
+2025-07-21 11:03:54 DEBUG    rasa.shared.providers.llm._base_litellm_client  - [debug    ] base_litellm_client.formatted_response formatted_response={'id': 'chatcmpl-Bvhf8xzwa12q2MUD8IJDiuSbQ1LeM', 'choices': ['Wie heißt der Nutzer, den du hinzufügen möchtest?'], 'created': 1753092234, 'model': 'gpt-4o-mini-2024-07-18', 'usage': {'prompt_tokens': 100, 'completion_tokens': 10, 'total_tokens': 110}, 'additional_info': None, 'latency': None}
+2025-07-21 11:03:54 DEBUG    rasa.utils.log_utils  - [debug    ] nlg.rewrite.complete           response_text=What's the handle of the user you want to add? updated_text=Wie heißt der Nutzer, den du hinzufügen möchtest?
+2025-07-21 11:03:54 DEBUG    rasa.core.processor  - [debug    ] processor.actions.policy_prediction action_name=utter_ask_add_contact_handle policy_name=FlowPolicy prediction_events=[DialogueStackUpdate("""[{"op": "replace", "path": "/1/step_id", "value": "pattern_collect_information_1_validate_{{context.collect}}"}]"""), DialogueStackUpdate("""[{"op": "replace", "path": "/1/step_id", "value": "ask_collect"}]""")]
+2025-07-21 11:03:54 DEBUG    rasa.core.processor  - [debug    ] processor.actions.log          action_name=utter_ask_add_contact_handle rasa_events=[BotUttered('Wie lautet der Handle des Benutzers, den du hinzufügen möchtest?', {"elements": null, "quick_replies": null, "buttons": null, "attachment": null, "image": null, "custom": null}, {"active_flow": "add_contact", "step_id": "add_contact_0_collect_add_contact_handle", "utter_action": "utter_ask_add_contact_handle", "utter_source": "ContextualResponseRephraser", "domain_ground_truth": ["What's the handle of the user you want to add?"]}, 1753092234.837899)]
+2025-07-21 11:03:54 DEBUG    rasa.engine.runner.dask  - Running graph with inputs: {'__tracker__': DialogueStateTracker(sender_id: OeBd9A7ZMXMhVkNBAAAB), '__endpoints__': <rasa.core.available_endpoints.AvailableEndpoints object at 0x16d1737d0>}, targets: ['select_prediction'] and ExecutionContext(model_id='b409e6fbeada4a63a421fae261d485d8', should_add_diagnostic_data=False, is_finetuning=False, node_name=None).
+2025-07-21 11:03:54 DEBUG    rasa.engine.graph  - [debug    ] graph.node.running_component   clazz=RuleOnlyDataProvider fn=provide node_name=rule_only_data_provider
+2025-07-21 11:03:54 DEBUG    rasa.engine.graph  - [debug    ] graph.node.running_component   clazz=FlowsProvider fn=provide_inference node_name=flows_provider
+2025-07-21 11:03:54 DEBUG    rasa.engine.graph  - [debug    ] graph.node.running_component   clazz=DomainProvider fn=provide_inference node_name=domain_provider
+2025-07-21 11:03:54 DEBUG    rasa.engine.graph  - [debug    ] graph.node.running_component   clazz=FlowPolicy fn=predict_action_probabilities node_name=run_FlowPolicy0
+2025-07-21 11:03:54 DEBUG    rasa.core.policies.flows.flow_executor  - [debug    ] flow.execution.loop            flow_id=pattern_collect_information previous_step_id=ask_collect
+2025-07-21 11:03:54 DEBUG    rasa.core.policies.flows.flow_executor  - [debug    ] flow.step.next                 current_id=ask_collect flow_id=pattern_collect_information next_id=pattern_collect_information_3_{{context.collect_action}}
+2025-07-21 11:03:54 DEBUG    rasa.core.policies.flows.flow_executor  - [debug    ] flow.execution.loop            flow_id=pattern_collect_information previous_step_id=pattern_collect_information_3_{{context.collect_action}}
+2025-07-21 11:03:54 DEBUG    rasa.core.policies.flows.flow_executor  - [debug    ] flow.step.next                 current_id=pattern_collect_information_3_{{context.collect_action}} flow_id=pattern_collect_information next_id=pattern_collect_information_4_action_listen
+2025-07-21 11:03:54 DEBUG    rasa.core.policies.flows.flow_executor  - [debug    ] flow.step.run.action           context={'context': {'frame_id': 'B6YNBDG8', 'flow_id': 'add_contact', 'step_id': 'add_contact_0_collect_add_contact_handle', 'collect': 'add_contact_handle', 'utter': 'utter_ask_add_contact_handle', 'collect_action': 'action_ask_add_contact_handle', 'rejections': [], 'type': 'flow', 'frame_type': 'regular'}} flow_id=pattern_collect_information step_id=pattern_collect_information_4_action_listen
+2025-07-21 11:03:54 DEBUG    rasa.engine.graph  - [debug    ] graph.node.running_component   clazz=DefaultPolicyPredictionEnsemble fn=combine_predictions_from_kwargs node_name=select_prediction
+2025-07-21 11:03:54 DEBUG    rasa.core.policies.ensemble  - Predicted next action using FlowPolicy.
+2025-07-21 11:03:54 DEBUG    rasa.core.processor  - Predicted next action 'action_listen' with confidence 1.00.
+2025-07-21 11:03:54 DEBUG    rasa.core.processor  - [debug    ] processor.actions.policy_prediction action_name=action_listen policy_name=FlowPolicy prediction_events=[DialogueStackUpdate("""[{"op": "replace", "path": "/1/step_id", "value": "pattern_collect_information_3_{{context.collect_action}}"}]"""), DialogueStackUpdate("""[{"op": "replace", "path": "/1/step_id", "value": "pattern_collect_information_4_action_listen"}]""")]
+2025-07-21 11:03:54 DEBUG    rasa.core.processor  - [debug    ] processor.actions.log          action_name=action_listen rasa_events=[]
+2025-07-21 11:03:54 DEBUG    rasa.core.tracker_stores.tracker_store  - [debug    ] No event broker configured. Skipping streaming events. event_key=tracker_store.stream_events.no_broker_configured
+2025-07-21 11:03:54 DEBUG    rasa.core.processor  - [debug    ] processor.trigger_anonymization.skipping.pii_management_not_enabled
+2025-07-21 11:03:54 DEBUG    rasa.core.lock_store  - [debug    ] Deleted lock for conversation 'OeBd9A7ZMXMhVkNBAAAB'. event_key=lock_store._deleted_lock_for_conversation
