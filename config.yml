@@ -1,6 +1,7 @@
 recipe: default.v1
 language: en
 pipeline:
+- name: NLUCommandAdapter
 - name: CompactLLMCommandGenerator
   llm:
     model_group: openai-gpt-4o
