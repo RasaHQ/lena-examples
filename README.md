@@ -34,7 +34,7 @@ set slot `custom_action_error` to `True` and branch in flow
 
 - have to add to every step that has a custom action
 
-### 2 - do it in custom action
+### 2 - do it in custom action (no pattern triggering)
 followup `action_clean_stack` in the custom action to clean the stack. 
 add `action_listen` so `pattern_completed` does not trigger (??? untested)
 
@@ -45,7 +45,19 @@ add `action_listen` so `pattern_completed` does not trigger (??? untested)
 **Cons**:
 
 - All logic is in custom action. 
-- Cannot start patterns in custom action --> maybe could start pattern with nlu trigger. trigger intent from custom action (??? untested)
+
+
+## 3 - start pattern_internal_error in custom action
+
+Add nlu_trigger to pattern_internal_error and trigger intent from custom action (??? untested)
+
+**Pros**
+- easier to add branching logic to patterns
+- logic is in flow
+
+**Cons**
+
+- unexpected behaviour with `patttern_continue_interrupted`?
 
 ## Bot details
 
