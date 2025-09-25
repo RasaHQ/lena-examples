@@ -10,3 +10,14 @@ flows:
     steps:
       - collect: test_error
         ask_before_filling: true
+
+  pattern_internal_error:
+    description: internal error
+    name: pattern internal error
+    nlu_trigger:
+      - intent:
+          name: "internal_error"
+    steps:
+      - action: utter_internal_error_rasa
+      - action: action_clean_stack
+        next: END
