@@ -1,0 +1,25 @@
+version: "3.1"
+
+slots:
+  return_value:
+    type: any
+    mappings:
+      - type: controlled
+  test_error:
+    type: bool
+    mappings:
+      - type: controlled
+  action_server_error:
+    type: bool
+    mappings:
+      - type: controlled
+
+
+responses:
+  utter_ask_test_error:
+    - text: "Do you want to test error handling?"
+      buttons:
+        - title: "Yes"
+          payload: "/SetSlots(test_error=true)"
+        - title: "No"
+          payload: "/SetSlots(test_error=false)"

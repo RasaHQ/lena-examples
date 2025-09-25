@@ -1,0 +1,12 @@
+flows:
+  pattern_session_start:
+    description: "Flow for starting the conversation"
+    name: "pattern_session_start"
+    nlu_trigger:
+      - intent:
+          name: "session_start"
+    persisted_slots:
+      - test_error
+    steps:
+      - collect: test_error
+        ask_before_filling: true

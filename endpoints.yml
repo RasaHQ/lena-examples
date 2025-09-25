@@ -1,0 +1,17 @@
+action_endpoint:
+  actions_module: "actions"
+
+model_groups:
+  - id: openai-gpt-4o
+    models:
+      - provider: openai
+        model: gpt-4o-2024-11-20
+        request_timeout: 7
+        max_tokens: 256
+
+# tracing:
+#   type: otlp
+#   endpoint: localhost:4317
+#   insecure: true
+#   host: localhost
+#   service_name: rasa
