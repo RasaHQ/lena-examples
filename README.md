@@ -22,7 +22,7 @@ What Albert Heijn does:
 
 ## Ideas
 
-1.
+### 1- do it in flows
 set slot `custom_action_error` to `True` and branch in flow
 
 **Pros:**
@@ -34,9 +34,9 @@ set slot `custom_action_error` to `True` and branch in flow
 
 - have to add to every step that has a custom action
 
-2.
+### 2 - do it in custom action
 followup `action_clean_stack` in the custom action to clean the stack. 
-add `action_listen` so pattern_completed does not trigger (??? untested)
+add `action_listen` so `pattern_completed` does not trigger (??? untested)
 
 **Pros**:
 - All in custom action. 
