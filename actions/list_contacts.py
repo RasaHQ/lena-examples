@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Text
 
 from rasa_sdk import Action, Tracker
-from rasa_sdk.events import SlotSet
+from rasa_sdk.events import SlotSet, FollowupAction, UserUttered
 from rasa_sdk.executor import CollectingDispatcher
 
 from actions.db import get_contacts
@@ -19,9 +19,10 @@ class ListContacts(Action):
         # Add test flag to trigger exception
         test_error = tracker.get_slot("test_error")
         if test_error:
-            dispatcher.utter_message(response="utter_internal_error_rasa")
             logger.error("Test exception in list_contacts")
-            return [SlotSet("action_server_error", True)]
+            dispatcher.utter_message(response="utter_internal_error_rasa")
+            return [SlotSet("action_server_error", True), 
+                    FollowupAction("action_clean_stack")]
 
         try:
             contacts = get_contacts(tracker.sender_id)
@@ -31,5 +32,8 @@ class ListContacts(Action):
             else:
                 return [SlotSet("contacts_list", None)]
         except Exception as e:
+            logger.error(f"Exception in list_contacts: {e}")
             dispatcher.utter_message(response="utter_internal_error_rasa")
-            return [SlotSet("contacts_list", None), SlotSet("action_server_error", True)]
+            return [SlotSet("contacts_list", None), 
+                    SlotSet("action_server_error", True),
+                    FollowupAction("action_clean_stack")]
