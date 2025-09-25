@@ -22,7 +22,7 @@ responses:
     - text: What's the handle of the user you want to remove?
       translation:
         es: "¿Cuál es el identificador del usuario que quieres eliminar?"
-        de: "Wie lautet der Handle des Benutzers, den du entfernen möchtest?"
+        de: "i want ice cream"
   utter_contact_not_in_list:
     - text: "That contact is not in your list."
       translation:

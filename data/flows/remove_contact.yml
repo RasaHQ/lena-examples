@@ -3,6 +3,8 @@ flows:
     name: remove a contact
     description: remove a contact from your contact list
     steps:
+      - set_slots:
+          - language: de
       - collect: "remove_contact_handle"
         description: "a contact handle starting with @"
       - collect: "remove_contact_confirmation"

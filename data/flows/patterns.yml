@@ -1,11 +1,11 @@
-flows:
-  pattern_session_start:
-    description: Flow for starting the conversation
-    name: pattern session start
-    nlu_trigger:
-      - intent: session_start
-    steps:
-      # Comment this collect step to use the default language
-      - collect: language
-        ask_before_filling: true
-      - action: action_session_start
+# flows:
+#   pattern_session_start:
+#     description: Flow for starting the conversation
+#     name: pattern session start
+#     nlu_trigger:
+#       - intent: session_start
+#     steps:
+#       # Comment this collect step to use the default language
+#       - collect: language
+#         ask_before_filling: true
+#       - action: action_session_start
