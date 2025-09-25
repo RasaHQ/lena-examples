@@ -52,7 +52,7 @@ add `action_listen` so `pattern_completed` does not trigger (??? untested)
 - `pattern_session_start` has been modified to allow you to set a slot to trigger error in `list_contact` flow
 - there is a slot `custom_action_error` that will be true if the custom action fails. Branch on that slot. How to scale?
 
-This is the ideal conversation. Maybe better pattern_completed
+This is the ideal conversation. Maybe better without `pattern_completed` (not sure how to do that yet)
 ```
 <--- convo starts --->
 Bot: Do you want to test error handling?
