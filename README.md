@@ -2,19 +2,15 @@
 
 [ZD ticket](https://rasahq.zendesk.com/agent/tickets/1914)
 
-### Problem
+## Problem
 
 Recommendations for error handling in custom actions in a conversational way. For example, if there is an error with the API request, then bot should say something went wrong and try again later.
 
-### Findings
+## Notes
 
 - CALM doesn't do anything OOTB when a custom action encounters an exception. 
 - CALM continues on with the flow so you can log and raise an exception but CALM will carry on.
 - You can set a slot like `custom_action_error` and use that to branch to link a flow or `pattern_internal_error` but then you'd have to do that at every step there is a custom action. This doesn't seem scalable.
-
-### Ideas
-
-- use followup `action_clean_stack` in the custom action clean the stack
 
 What Albert Heijn does:
 
@@ -24,7 +20,47 @@ What Albert Heijn does:
 - followup action `action_clean_stack` in custom action
 - conversation processor changes handler to human
 
-### Bot details
+## Ideas
+
+1.
+set slot `custom_action_error` to `True` and branch in flow
+
+**Pros:**
+
+- Logic is in flow
+- can link to flow (human handoff)
+
+**Cons:**
+
+- have to add to every step that has a custom action
+
+2.
+followup `action_clean_stack` in the custom action to clean the stack. 
+add `action_listen` so pattern_completed does not trigger (??? untested)
+
+**Pros**:
+- All in custom action. 
+- Could make a custom `Action` class to make this easier to scale.
+
+**Cons**:
+
+- All logic is in custom action. 
+- Cannot start patterns in custom action --> maybe could start pattern with nlu trigger. trigger intent from custom action (??? untested)
+
+## Bot details
 
 - `pattern_session_start` has been modified to allow you to set a slot to trigger error in `list_contact` flow
 - there is a slot `custom_action_error` that will be true if the custom action fails. Branch on that slot. How to scale?
+
+This is the ideal conversation. Maybe better pattern_completed
+```
+<--- convo starts --->
+Bot: Do you want to test error handling?
+User: Yes
+<bot listening>
+User: list contacts
+<list_contacts custom action runs and errors>
+Bot: Sorry, I am having trouble with that. Please try again in a few minutes.
+Bot: <pattern_completed>
+<--- convo ends --->
+```
