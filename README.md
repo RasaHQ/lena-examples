@@ -58,7 +58,7 @@ Add nlu_trigger to pattern_internal_error and trigger intent from custom action
 **Cons**
 
 - unexpected behaviour with `patttern_continue_interrupted`
-- Not able to continue normal conversation
+<!-- - Not able to continue normal conversation -->
 
 ## Bot details
 
