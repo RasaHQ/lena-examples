@@ -20,4 +20,4 @@ flows:
     steps:
       - action: utter_internal_error_rasa
       - action: action_clean_stack
-        next: END
+        # next: END
