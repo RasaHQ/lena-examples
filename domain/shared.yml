@@ -23,3 +23,6 @@ responses:
           payload: "/SetSlots(test_error=true)"
         - title: "No"
           payload: "/SetSlots(test_error=false)"
+  utter_session_start:
+    - text: |
+        How may I help you, today?

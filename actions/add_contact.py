@@ -6,12 +6,13 @@ from rasa_sdk.executor import CollectingDispatcher
 
 from actions.db import Contact, add_contact, get_contacts
 
+from actions.safeaction import SafeAction
 
-class AddContact(Action):
+class AddContact(SafeAction):
     def name(self) -> str:
         return "add_contact"
 
-    def run(
+    def safe_run(
         self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[str, Any]
     ) -> List[Dict[Text, Any]]:
         contacts = get_contacts(tracker.sender_id)

@@ -5,19 +5,21 @@ flows:
     nlu_trigger:
       - intent:
           name: "session_start"
-    persisted_slots:
-      - test_error
+    # persisted_slots:
+    #   - test_error
+    # steps:
+    #   - collect: test_error
+    #     ask_before_filling: true
     steps:
-      - collect: test_error
-        ask_before_filling: true
+      - action: utter_session_start
 
-  pattern_internal_error:
-    description: internal error
-    name: pattern internal error
-    nlu_trigger:
-      - intent:
-          name: "internal_error"
-    steps:
-      - action: utter_internal_error_rasa
-      - action: action_clean_stack
-        next: END
+  # pattern_internal_error:
+  #   description: internal error
+  #   name: pattern internal error
+  #   nlu_trigger:
+  #     - intent:
+  #         name: "internal_error"
+  #   steps:
+  #     - action: utter_internal_error_rasa
+  #     - action: action_clean_stack
+  #       next: END

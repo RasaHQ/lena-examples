@@ -8,7 +8,8 @@ from pydantic import BaseModel
 from actions.db_utils import write_json_to_file, read_json_file
 
 ORIGIN_DB_PATH = "db"
-CONTACTS = "contacts.json"
+# CONTACTS = "contacts.json"
+CONTACTS = "contact.json"
 
 
 class Contact(BaseModel):

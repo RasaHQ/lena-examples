@@ -173,3 +173,4 @@ cython_debug/
 models/
 .rasa/
 .DS_Store
+logs/
