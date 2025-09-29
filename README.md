@@ -49,7 +49,7 @@ add `action_listen` so `pattern_completed` does not trigger (??? untested)
 
 ## 3 - start pattern_internal_error in custom action
 
-Add nlu_trigger to pattern_internal_error and trigger intent from custom action (??? untested)
+Add nlu_trigger to pattern_internal_error and trigger intent from custom action
 
 **Pros**
 - easier to add branching logic to patterns
@@ -57,7 +57,8 @@ Add nlu_trigger to pattern_internal_error and trigger intent from custom action 
 
 **Cons**
 
-- unexpected behaviour with `patttern_continue_interrupted`?
+- unexpected behaviour with `patttern_continue_interrupted`
+- Not able to continue normal conversation
 
 ## Bot details
 
