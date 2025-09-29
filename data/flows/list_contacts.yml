@@ -9,10 +9,10 @@ flows:
             then:
               - action: utter_list_contacts
                 next: END
-          # - if: slots.action_server_error
-          #   then:
-          #     - action: utter_internal_error_rasa
-          #       next: END
+          - if: slots.action_server_error
+            then:
+              - action: utter_internal_error_rasa
+                next: END
           - else:
               - action: utter_no_contacts
                 next: END

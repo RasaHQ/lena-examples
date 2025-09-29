@@ -23,17 +23,23 @@ class ListContacts(Action):
             dispatcher.utter_message(response="utter_internal_error_rasa")
             return [SlotSet("action_server_error", True), 
                     FollowupAction("action_clean_stack")]
-
-        try:
-            contacts = get_contacts(tracker.sender_id)
-            if len(contacts) > 0:
-                contacts_list = "".join([f"- {c.name} ({c.handle}) \n" for c in contacts])
-                return [SlotSet("contacts_list", contacts_list)]
-            else:
-                return [SlotSet("contacts_list", None)]
-        except Exception as e:
-            logger.error(f"Exception in list_contacts: {e}")
-            dispatcher.utter_message(response="utter_internal_error_rasa")
-            return [SlotSet("contacts_list", None), 
-                    SlotSet("action_server_error", True),
-                    FollowupAction("action_clean_stack")]
+        contacts = get_contacts(tracker.sender_id)
+        if len(contacts) > 0:
+            contacts_list = "".join([f"- {c.name} ({c.handle}) \n" for c in contacts])
+            return [SlotSet("contacts_list", contacts_list)]
+        else:
+            return [SlotSet("contacts_list", None)]
+        # try:
+        #     contacts = get_contacts(tracker.sender_id)
+        #     if len(contacts) > 0:
+        #         contacts_list = "".join([f"- {c.name} ({c.handle}) \n" for c in contacts])
+        #         return [SlotSet("contacts_list", contacts_list)]
+        #     else:
+        #         return [SlotSet("contacts_list", None)]
+        # except Exception as e:
+        #     logger.error(f"Exception in list_contacts: {e}")
+        #     return []
+            # dispatcher.utter_message(response="utter_internal_error_rasa")
+            # return [SlotSet("contacts_list", None), 
+            #         SlotSet("action_server_error", True),
+            #         FollowupAction("action_clean_stack")]
