@@ -1,2 +1,1 @@
-# lena-examples
-Example bots on different branches
+# Pass auth header from web widget > rasa pro > action server

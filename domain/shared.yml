@@ -1,0 +1,13 @@
+version: "3.1"
+
+actions:
+  - action_session_start
+  - add_contact
+  - list_contacts
+
+
+slots:
+  return_value:
+    type: any
+    mappings:
+      - type: controlled
