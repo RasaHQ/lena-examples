@@ -1,0 +1,9 @@
+flows:
+  greet_user:
+    name: greet user
+    description: greet the user
+    nlu_trigger:
+      - intent: greet_user
+    steps:
+      - action: utter_greet
+      - action: action_read_headers

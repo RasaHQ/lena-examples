@@ -1,0 +1,12 @@
+version: "3.1"
+
+intents:
+  - greet_user
+
+actions:
+  - action_read_headers
+
+responses:
+  utter_greet:
+    - text: "Hello! How can I assist you?"
+

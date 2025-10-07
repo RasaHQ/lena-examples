@@ -75,19 +75,19 @@ class AuthRestChannel(RestInput):
         metadata = self.get_metadata(request) or {}
 
         # Option 1: Pass all headers (use if needed)
-        # metadata["headers"] = dict(request.headers)
+        metadata["headers"] = dict(request.headers)
   
         # Option 2: Extract specific client headers (recommended approach)
-        client_headers = {}
-        for header in HEADERS_TO_PROPAGATE:
-            if header in request.headers:
-                client_headers[header] = request.headers.get(header)
+        # client_headers = {}
+        # for header in HEADERS_TO_PROPAGATE:
+        #     if header in request.headers:
+        #         client_headers[header] = request.headers.get(header)
 
         # Option 3: Extract specific auth token (alternative approach)
         # metadata["x-auth-token"] = request.headers.get("x-auth-token")
 
         # Store client headers in nested structure for compatibility
-        metadata[CLIENT_AUTH_HEADER_KEY] = client_headers
+        # metadata[CLIENT_AUTH_HEADER_KEY] = client_headers
 
         return metadata
 
@@ -107,8 +107,13 @@ class AuthRestChannel(RestInput):
             HTTP response (streaming or regular)
         """
         # Extract metadata with client headers using colleague's pattern
+        metadata = self.get_metadata(request)
+
         metadata = self.extract_client_headers(request)
-    
+
+        # log metadata for debugging
+        logger.debug(f"Extracted metadata: {metadata}")
+        
         # Extract message information
         sender_id = await self._extract_sender(request)
         text = self._extract_message(request)
@@ -116,7 +121,6 @@ class AuthRestChannel(RestInput):
             request, "stream", default=False
         )
         input_channel = self._extract_input_channel(request)
-        metadata = self.get_metadata(request)
 
         if should_use_stream:
             return ResponseStream(

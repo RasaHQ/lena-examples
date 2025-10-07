@@ -1,7 +1,8 @@
-from argparse import Actionfrom typing import Any, Text, Dict, List
+from argparse import Action
+from typing import Any, Text, Dict, List
 from rasa_sdk import Action, Tracker
 from rasa_sdk.executor import CollectingDispatcher
-from rasa_sdk.events import SlotSet
+import logging
 
 CLIENT_AUTH_HEADER_KEY = "client_auth_headers"
 
@@ -27,24 +28,15 @@ def get_client_auth_headers(tracker: Tracker) -> Dict[str, str]:
     Returns:
         Dictionary containing authentication headers
     """
-    headers = {
-        "User-Agent": "Rasa Action Server",
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-    }
+    # headers = {
+    #     "User-Agent": "Rasa Action Server",
+    #     "Accept": "application/json",
+    #     "Content-Type": "application/json",
+    # }
 
     try:
         metadata = tracker.latest_message.get("metadata", {})
-        client_headers = metadata.get(CLIENT_AUTH_HEADER_KEY, {})
-
-        if not client_headers:
-            logger.warning("No client auth headers found in metadata")
-            return headers
-
-        # Copy specific headers from client headers
-        for key in HEADERS_TO_PROPAGATE:
-            if key in client_headers and client_headers[key]:
-                headers[key] = client_headers[key]
+        headers = metadata.get("headers", {})
 
         return headers
     except Exception as e:
@@ -52,9 +44,9 @@ def get_client_auth_headers(tracker: Tracker) -> Dict[str, str]:
         return headers
 
 
-class ActionSessionStart(Action):
+class ActionReadHeaders(Action):
     def name(self) -> Text:
-        return "action_session_start"
+        return "action_read_headers"
 
     def run(
         self,
@@ -74,6 +66,7 @@ class ActionSessionStart(Action):
             List of events (empty in this case)
         """
         headers = get_client_auth_headers(tracker)
+        logging.info(f"Extracted headers: {headers}")
 
         text = "\n".join([f"{key}: {value}" for key, value in headers.items()])
 
