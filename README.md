@@ -40,8 +40,10 @@ This tells Rasa to:
 
    ```bash
    curl -X POST {{baseUrl}}/webhooks/auth_rest_channel/webhook \
+         -H "x-auth-token: very_secure_token" \
+         -H "test-header: hello-world" \
      -H "Content-Type: application/json" \
-     -d '{"sender": "header-test", "message": "hello"}'
+     -d '{"sender": "header-test", "message": "/greet_user"}'
    ```
 
 The bot will respond with the headers it received, demonstrating successful header propagation from frontend → Rasa Pro → Action Server.
@@ -58,7 +60,7 @@ When you send a request with custom headers, you'll receive a response like this
     },
     {
         "recipient_id": "header-test",
-        "text": "Headers used for API call:\nx-auth-token: very_secure_token\nlena-test: hello-world\ncontent-type: application/json\nuser-agent: PostmanRuntime/7.48.0\naccept: */*\ncache-control: no-cache\npostman-token: 32f56f22-d599-47fe-865b-9f6f35e27b17\nhost: localhost:5005\naccept-encoding: gzip, deflate, br\nconnection: keep-alive\ncontent-length: 58"
+        "text": "Headers used for API call:\nx-auth-token: very_secure_token\ntest-headerc: hello-world\ncontent-type: application/json\nuser-agent: PostmanRuntime/7.48.0\naccept: */*\ncache-control: no-cache\npostman-token: 32f56f22-d599-47fe-865b-9f6f35e27b17\nhost: localhost:5005\naccept-encoding: gzip, deflate, br\nconnection: keep-alive\ncontent-length: 58"
     },
     {
         "recipient_id": "header-test",
