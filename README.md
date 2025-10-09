@@ -24,6 +24,24 @@ This tells Rasa to:
 
 ## Testing
 
+### Prerequisites
+
+Set up a Python virtual environment, install dependencies (Rasa Pro), and train a model:
+
+Recommend using [uv](https://docs.astral.sh/uv/getting-started/) to make rasa-pro installation faster.
+
+```bash
+# from the project root
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -U pip
+pip install uv
+uv pip install -r requirements.txt
+
+# train a model from domain.yml and data/flows/
+rasa train
+```
+
 1. Start Rasa Pro:
 
    ```bash
@@ -60,7 +78,7 @@ When you send a request with custom headers, you'll receive a response like this
     },
     {
         "recipient_id": "header-test",
-        "text": "Headers used for API call:\nx-auth-token: very_secure_token\ntest-headerc: hello-world\ncontent-type: application/json\nuser-agent: PostmanRuntime/7.48.0\naccept: */*\ncache-control: no-cache\npostman-token: 32f56f22-d599-47fe-865b-9f6f35e27b17\nhost: localhost:5005\naccept-encoding: gzip, deflate, br\nconnection: keep-alive\ncontent-length: 58"
+        "text": "Headers used for API call:\nx-auth-token: very_secure_token\ntest-header: hello-world\ncontent-type: application/json\nuser-agent: PostmanRuntime/7.48.0\naccept: */*\ncache-control: no-cache\npostman-token: 32f56f22-d599-47fe-865b-9f6f35e27b17\nhost: localhost:5005\naccept-encoding: gzip, deflate, br\nconnection: keep-alive\ncontent-length: 58"
     },
     {
         "recipient_id": "header-test",
@@ -69,4 +87,4 @@ When you send a request with custom headers, you'll receive a response like this
 ]
 ```
 
-This shows that your custom headers (like `x-auth-token` and `lena-test`) successfully passed through the entire chain.
+This shows that your custom headers (like `x-auth-token` and `test-header`) successfully passed through the entire chain.
