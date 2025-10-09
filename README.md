@@ -39,7 +39,7 @@ This tells Rasa to:
 3. Send a POST request to test header passing:
 
    ```bash
-   curl -X POST {{baseUrl}}/webhooks/auth_rest_channel/webhook \
+   curl -X POST http://localhost:5005/webhooks/auth_rest_channel/webhook \
          -H "x-auth-token: very_secure_token" \
          -H "test-header: hello-world" \
      -H "Content-Type: application/json" \
