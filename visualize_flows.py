@@ -20,13 +20,33 @@ def transform_yaml_to_mermaid(yml_file_path):
 
     # Extracting the first flow
     flow_name = list(yml_data['flows'].keys())[0]
-    # replace_card_flow = yml_data['flows']['replace_card']
     flow = yml_data['flows'][flow_name]
 
     # Helper function to get step ID from a step dict
     def get_step_id(step_dict):
         return (step_dict.get('id') or step_dict.get('collect') or 
                 step_dict.get('action') or step_dict.get('link') or step_dict.get('call'))
+    
+    # Helper function to extract NLU trigger information
+    def extract_nlu_triggers(flow):
+        triggers = []
+        if 'nlu_trigger' not in flow:
+            return triggers
+        
+        for trigger in flow['nlu_trigger']:
+            if isinstance(trigger, dict) and 'intent' in trigger:
+                intent_info = trigger['intent']
+                # Handle both string and dict formats
+                if isinstance(intent_info, str):
+                    triggers.append(intent_info)
+                elif isinstance(intent_info, dict):
+                    intent_name = intent_info.get('name', 'unknown')
+                    trigger_str = intent_name
+                    if 'confidence_threshold' in intent_info:
+                        confidence = intent_info['confidence_threshold']
+                        trigger_str += f" (confidence_threshold: {confidence})"
+                    triggers.append(trigger_str)
+        return triggers
     
     # Helper function to find target ID in steps_list for a nested step
     def find_target_in_steps(first_step, steps_list):
@@ -97,20 +117,32 @@ def transform_yaml_to_mermaid(yml_file_path):
 
     # Add the flow's description after the heading
     description = f"\n{flow['description']}\n"
-    
-    # Add flow-level metadata
+
+    # Build flow-level metadata
     metadata = []
+    
+    # Extract and format NLU triggers
+    triggers = extract_nlu_triggers(flow)
+    if triggers:
+        nlu_trigger_text = "**nlu_trigger:**\n" + "\n".join(f"- {t}" for t in triggers)
+        metadata.append(nlu_trigger_text)
+    
+    # Build flow guard metadata
     if 'if' in flow:
         if flow['if'] == False:
             metadata.append(f"**Flow Guard:** if: {flow['if']} (only triggered via call/link)")
         else:
             metadata.append(f"**Flow Guard:** if: {flow['if']}")
+    
+    # Build persisted slots metadata
     if 'persisted_slots' in flow:
         slots = ', '.join(flow['persisted_slots'])
         metadata.append(f"**persisted_slots:** {slots}")
     
+    # Add metadata to description
     if metadata:
-        description += '\n' + ' | '.join(metadata) + '\n'
+        for item in metadata:
+            description += '\n' + item + '\n'
     
     mermaid_content.insert(1, description)
 

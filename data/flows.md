@@ -460,6 +460,10 @@ graph TD
 
 Flow for starting the conversation
 
+**nlu_trigger:**
+- session_start (confidence_threshold: 0.8)
+- test (confidence_threshold: 0.5)
+
 ```mermaid
 graph TD
     welcome{{link: welcome}}

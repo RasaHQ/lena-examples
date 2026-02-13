@@ -3,6 +3,12 @@ flows:
     description: Flow for starting the conversation
     name: pattern session start
     nlu_trigger:
-        - intent: session_start
+        # - intent: session_start
+        - intent:
+            name: session_start
+            confidence_threshold: 0.8
+        - intent: 
+            name: test
+            confidence_threshold: 0.5
     steps:
       - link: welcome
