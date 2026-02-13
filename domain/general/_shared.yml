@@ -1,0 +1,39 @@
+version: "3.1"
+
+slots:
+  date:
+    type: any
+    mappings:
+      - type: from_llm
+  time:
+    type: any
+    mappings:
+      - type: from_llm
+  date_range_start:
+    type: any
+    mappings:
+      - type: from_llm
+  date_range_end:
+    type: any
+    mappings:
+      - type: from_llm
+  statement_month:
+    type: text
+    mappings:
+      - type: from_llm
+  statement_year:
+    type: text
+    mappings:
+      - type: from_llm
+  confirmation:
+    type: bool
+    mappings:
+      - type: from_llm
+  return_value:
+    type: any
+    mappings:
+      - type: from_llm
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true

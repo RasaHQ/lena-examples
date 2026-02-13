@@ -1,0 +1,9 @@
+flows:
+  check_balance:
+    description: |
+      Guides the user through retrieving their account balance by requesting an
+      account number or an account name and returning the balance on the selected account
+    name: check account balance
+    steps:
+      - action: check_balance
+      - action: utter_current_balance
