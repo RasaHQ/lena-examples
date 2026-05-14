@@ -1,0 +1,7 @@
+flows:
+  fallback:
+    description: |
+      General low-confidence fallback: ask the user to say their request again more clearly.
+    name: rephrase request
+    steps:
+      - action: utter_rephrase_request
