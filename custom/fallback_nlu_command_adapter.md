@@ -11,24 +11,24 @@ intent to `nlu_fallback`.
 
 ## File
 
-- Component: `examples/low_confidence_fallback_nlu_command_adapter.py`
+- Component: [`custom/fallback_nlu_command_adapter.py`](fallback_nlu_command_adapter.py)
 - Class: `FallbackNLUCommandAdapter`
 
 ## How to Configure
 
-In your assistant `config.yml`, replace `NLUCommandAdapter` with this class:
+In your assistant `config.yml`, replace `NLUCommandAdapter` with this class (or use it instead of the stock adapter in your NLU pipeline):
 
 ```yaml
 pipeline:
-  - name: examples.low_confidence_fallback_nlu_command_adapter.FallbackNLUCommandAdapter
-    fallback_flow_id: two_stage_fallback
-    enabled: true
+  - name: custom.fallback_nlu_command_adapter.FallbackNLUCommandAdapter
+    fallback_flow_id: card_nlu_fallback
 ```
+
+If this component appears in the pipeline, low-confidence fallback behavior is **on**. To disable it, remove the component from `config.yml` (or swap in the stock `NLUCommandAdapter`).
 
 ### Parameters
 
 - `fallback_flow_id` (required): Flow id to start on near-miss.
-- `enabled` (optional, default `true`): Enable/disable this behavior.
 
 ## How It Works
 
@@ -37,7 +37,7 @@ pipeline:
    behavior unchanged.
 3. Otherwise, it scans all non-default user flows and checks trigger conditions:
    same intent name + confidence below threshold.
-4. If matched, it prepends `StartFlowCommand(fallback_flow_id)`.
+4. If matched, it **replaces** the current command list with `StartFlowCommand(fallback_flow_id)` (and optionally `SetSlotCommand` for coexistence routing).
 5. If coexistence routing is active, it also sets `ROUTE_TO_CALM_SLOT`.
 6. Applies `clean_up_commands(...)` before returning.
 
@@ -72,4 +72,4 @@ After configuring:
 Result:
 
 - Original flow does not start (below 0.7).
-- This component starts `fallback_flow_id` (for example, `two_stage_fallback`).
+- This component starts `fallback_flow_id` (for example, `card_nlu_fallback`).

@@ -3,10 +3,8 @@
 Usage in `config.yml`:
 
 pipeline:
-  - name: examples.low_confidence_fallback_nlu_command_adapter.
-      LowConfidenceFallbackNLUCommandAdapter
-    fallback_flow_id: two_stage_fallback
-    enabled: true
+  - name: custom.fallback_nlu_command_adapter.FallbackNLUCommandAdapter
+    fallback_flow_id: card_nlu_fallback
 """
 
 from __future__ import annotations
@@ -57,7 +55,6 @@ class FallbackNLUCommandAdapter(NLUCommandAdapter):
     def get_default_config() -> Dict[str, Any]:
         return {
             "fallback_flow_id": None,
-            "enabled": True,
         }
 
     def __init__(
@@ -71,7 +68,6 @@ class FallbackNLUCommandAdapter(NLUCommandAdapter):
         self._fallback_flow_id: Optional[str] = self.config.get(
             "fallback_flow_id"
         )
-        self._enabled: bool = bool(self.config.get("enabled", True))
 
     async def predict_commands(
         self,
@@ -107,7 +103,8 @@ class FallbackNLUCommandAdapter(NLUCommandAdapter):
         """Decide whether to replace predicted commands with the fallback flow.
 
         The fallback is injected only when **all** of the following hold:
-          1. the component is enabled and a fallback flow id is configured,
+          1. a fallback flow id is configured (presence in the pipeline implies the
+             adapter is active),
           2. the tracker exists and flows are non-empty,
           3. the message is a near-miss on some flow's NLU trigger,
           4. the configured fallback flow id exists in the loaded flows,
@@ -135,7 +132,7 @@ class FallbackNLUCommandAdapter(NLUCommandAdapter):
         return True
 
     def _is_configured(self) -> bool:
-        return self._enabled and bool(self._fallback_flow_id)
+        return bool(self._fallback_flow_id)
 
     def _fallback_flow_exists(self, flows: FlowsList) -> bool:
         if self._fallback_flow_id in flows.flow_ids:

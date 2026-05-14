@@ -9,6 +9,6 @@ pipeline:
   - name: CountVectorsFeaturizer
   - name: LogisticRegressionClassifier
   - name: custom.fallback_nlu_command_adapter.FallbackNLUCommandAdapter
-    fallback_flow_id: card_nlu_fallback
+    fallback_flow_id: fallback
 policies:
   - name: FlowPolicy
