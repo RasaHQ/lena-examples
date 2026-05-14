@@ -21,7 +21,7 @@ In your assistant `config.yml`, replace `NLUCommandAdapter` with this class (or 
 ```yaml
 pipeline:
   - name: custom.fallback_nlu_command_adapter.FallbackNLUCommandAdapter
-    fallback_flow_id: card_nlu_fallback
+    fallback_flow_id: fallback
 ```
 
 If this component appears in the pipeline, low-confidence fallback behavior is **on**. To disable it, remove the component from `config.yml` (or swap in the stock `NLUCommandAdapter`).
@@ -72,4 +72,4 @@ After configuring:
 Result:
 
 - Original flow does not start (below 0.7).
-- This component starts `fallback_flow_id` (for example, `card_nlu_fallback`).
+- This component starts `fallback_flow_id` (for example, `fallback` in this template).
