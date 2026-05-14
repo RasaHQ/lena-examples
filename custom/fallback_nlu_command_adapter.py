@@ -4,7 +4,7 @@ Usage in `config.yml`:
 
 pipeline:
   - name: custom.fallback_nlu_command_adapter.FallbackNLUCommandAdapter
-    fallback_flow_id: card_nlu_fallback
+    fallback_flow_id: fallback
 """
 
 from __future__ import annotations
