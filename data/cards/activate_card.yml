@@ -2,6 +2,10 @@ flows:
   activate_card:
     description: Activates user's card.
     name: activate card
+    nlu_trigger:
+      - intent:
+          name: activate_card
+          confidence_threshold: 0.75
     steps:
       - action: utter_start_activate_card
 

@@ -5,6 +5,10 @@ flows:
       Handles the following types of money transfers initiated by the user:
       - "Third Party": Transfer money to another person, business or service within domestic banks. Third party transfer can be immediate, scheduled, or set up as a recurring payments.
       - "Self transfer": Transfer funds between user's own accounts at the same bank (immediate only).
+    nlu_trigger:
+      - intent:
+          name: transfer_money
+          confidence_threshold: 0.75
 
     steps:
       - id: choose_transfer_type

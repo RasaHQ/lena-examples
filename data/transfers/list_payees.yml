@@ -4,6 +4,10 @@ flows:
     description: |
       List your payees or authorised recipients for money transfers. 
       Show the people in your contact list who are valid payees you can transfer money to.
+    nlu_trigger:
+      - intent:
+          name: list_payees
+          confidence_threshold: 0.75
     steps:
       - action: list_payees
         next: END

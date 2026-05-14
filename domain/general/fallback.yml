@@ -1,0 +1,6 @@
+version: "3.1"
+
+responses:
+  utter_rephrase_request:
+    - text: "I did not quite catch that. Could you rephrase what you would like to do in a short, clear sentence?"
+

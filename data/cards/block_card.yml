@@ -2,6 +2,10 @@ flows:
   block_card:
     description: Applies a permanent or temporary block to stolen, lost or compromised banking cards.
     name: block card
+    nlu_trigger:
+      - intent:
+          name: block_card
+          confidence_threshold: 0.7
     steps:
       - action: utter_start_block_card
 

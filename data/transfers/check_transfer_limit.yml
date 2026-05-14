@@ -1,6 +1,10 @@
 flows:
   check_transfer_limit:
     description: Provides the maximum allowed amount the user can send or transfer per transaction, per day, or per month, as set by account policies—not the current available balance.
+    nlu_trigger:
+      - intent:
+          name: check_transfer_limit
+          confidence_threshold: 0.75
     steps:
 
       - collect: transfer_limit_type

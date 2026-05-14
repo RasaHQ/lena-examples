@@ -2,6 +2,10 @@ flows:
   replace_card:
     description: Replaces an existing card if it’s lost, stolen, damaged, or compromised (including suspected fraud).
     name: replace card
+    nlu_trigger:
+      - intent:
+          name: replace_card
+          confidence_threshold: 0.75
     steps:
       - collect: confirm_correct_card
         description: "Confirms whether the displayed card is the correct one to replace; accepts True or False, yes or no."

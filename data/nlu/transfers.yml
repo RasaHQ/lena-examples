@@ -1,0 +1,53 @@
+version: "3.1"
+nlu:
+  - intent: check_transfer_limit
+    examples: |
+      - what is my transfer limit
+      - how much can I send per day
+      - daily transfer limit
+      - monthly transfer cap
+      - maximum I can transfer
+      - transfer limit for my account
+      - how much am I allowed to transfer
+      - check my sending limits
+      - limit on outgoing transfers
+      - not sure about transfer limits
+
+  - intent: transfer_money
+    examples: |
+      - I want to transfer money
+      - send money to another account
+      - move money between my accounts
+      - pay someone from my account
+      - transfer funds to a friend
+      - I need to make a bank transfer
+      - wire money domestically
+      - send payment to a payee
+      - transfer cash between accounts
+      - something about transferring money
+
+  - intent: list_transactions
+    examples: |
+      - show my recent transactions
+      - list transactions on my account
+      - what did I spend lately
+      - view my transaction history
+      - recent activity on my account
+      - show debits and credits
+      - last few transactions please
+      - transaction list
+      - see what I paid recently
+      - maybe show transactions
+
+  - intent: list_payees
+    examples: |
+      - who can I send money to
+      - list my payees
+      - show authorised recipients
+      - people I can transfer to
+      - my transfer contacts
+      - list trusted payees
+      - who is on my payee list
+      - display payees for transfers
+      - valid recipients for payments
+      - list payees maybe

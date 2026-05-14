@@ -5,6 +5,10 @@ flows:
       Enables users to quickly view their most recent account transactions. 
       After presenting these, the users has the option to view their scheduled (upcoming) 
       transactions.
+    nlu_trigger:
+      - intent:
+          name: list_transactions
+          confidence_threshold: 0.75
     steps:
       - action: list_transactions
       - action: utter_transactions

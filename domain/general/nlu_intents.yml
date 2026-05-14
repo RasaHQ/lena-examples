@@ -1,0 +1,11 @@
+version: "3.1"
+
+intents:
+  - activate_card
+  - block_card
+  - list_cards
+  - replace_card
+  - check_transfer_limit
+  - transfer_money
+  - list_transactions
+  - list_payees

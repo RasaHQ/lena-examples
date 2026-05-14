@@ -1,0 +1,45 @@
+version: "3.1"
+nlu:
+  - intent: activate_card
+    examples: |
+      - I need to activate my card
+      - activate my new debit card
+      - turn on my card please
+      - card activation
+      - make my card work
+      - start using my new card
+      - enable my bank card
+      - not sure activate thing
+
+  - intent: block_card
+    examples: |
+      - block my card
+      - freeze this card
+      - my card was stolen block it
+      - temporary block on visa
+      - permanently block the card
+      - stop my card from working
+      - card block please
+      - something about blocking cards
+
+  - intent: list_cards
+    examples: |
+      - show my cards
+      - what cards do I have
+      - list all my bank cards
+      - display cards on my account
+      - which cards are linked
+      - see my card list
+      - cards I have with you
+      - list cards maybe
+
+  - intent: replace_card
+    examples: |
+      - replace my damaged card
+      - I lost my card need a new one
+      - order a replacement card
+      - my card was stolen replace it
+      - send me a new card
+      - replace card please
+      - damaged card replacement
+      - replace something card related

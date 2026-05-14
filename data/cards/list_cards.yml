@@ -2,6 +2,10 @@ flows:
   list_cards:
     name: Show cards along with the account information the cards are linked to.
     description: show your card list
+    nlu_trigger:
+      - intent:
+          name: list_cards
+          confidence_threshold: 0.8
     steps:
       - action: list_cards
         next:
