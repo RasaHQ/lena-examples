@@ -1,0 +1,51 @@
+version: "3.1"
+
+actions:
+  - replace_contact
+
+slots:
+  replace_contact_old_handle:
+    type: text
+    mappings:
+      - type: from_llm
+  replace_contact_old_name:
+    type: text
+    mappings:
+      - type: controlled
+  replace_contact_new_handle:
+    type: text
+    mappings:
+      - type: from_llm
+  replace_contact_new_name:
+    type: text
+    mappings:
+      - type: from_llm
+  replace_contact_confirmation:
+    type: bool
+    mappings:
+      - type: from_llm
+
+responses:
+  utter_ask_replace_contact_old_handle:
+    - text: What's the handle of the contact you want to replace?
+  utter_ask_replace_contact_new_handle:
+    - text: What's the handle of the new contact?
+  utter_ask_replace_contact_new_name:
+    - text: What's the name of the new contact?
+  utter_ask_replace_contact_confirmation:
+    - text: "Should I replace {replace_contact_old_handle} with {replace_contact_new_name}({replace_contact_new_handle})?"
+      buttons:
+        - payload: "/SetSlots(replace_contact_confirmation=true)"
+          title: Yes
+        - payload: "/SetSlots(replace_contact_confirmation=false)"
+          title: No, cancel
+  utter_replace_contact_success:
+    - text: "Replaced {replace_contact_old_handle}({replace_contact_old_name}) with {replace_contact_new_name}({replace_contact_new_handle})."
+  utter_replace_contact_not_found:
+    - text: "That contact is not in your list."
+  utter_replace_contact_already_exists:
+    - text: "There's already a different contact with that handle in your list."
+  utter_replace_contact_error:
+    - text: "Something went wrong, please try again."
+  utter_replace_contact_cancelled:
+    - text: "Okay, I am cancelling this replacement."

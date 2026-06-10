@@ -1,0 +1,37 @@
+flows:
+  replace_contact:
+    name: replace a contact
+    description: replace one contact in your contact list with a different contact
+    steps:
+      - collect: "replace_contact_old_handle"
+        description: "the handle of the existing contact to replace, starting with @"
+      - collect: "replace_contact_new_handle"
+        description: "the handle of the new contact, starting with @"
+      - collect: "replace_contact_new_name"
+        description: "the name of the new contact"
+      - collect: "replace_contact_confirmation"
+        ask_before_filling: true
+        next:
+          - if: "slots.replace_contact_confirmation is not true"
+            then:
+              - action: utter_replace_contact_cancelled
+                next: END
+          - else: replace_contact
+      - id: replace_contact
+        action: replace_contact
+        next:
+          - if: "slots.return_value == 'success'"
+            then:
+              - action: utter_replace_contact_success
+                next: END
+          - if: "slots.return_value == 'not_found'"
+            then:
+              - action: utter_replace_contact_not_found
+                next: END
+          - if: "slots.return_value == 'already_exists'"
+            then:
+              - action: utter_replace_contact_already_exists
+                next: END
+          - else:
+              - action: utter_replace_contact_error
+                next: END

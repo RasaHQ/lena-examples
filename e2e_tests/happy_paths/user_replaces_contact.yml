@@ -1,0 +1,19 @@
+test_cases:
+  - test_case: user replaces a contact
+    steps:
+      - user: I want to replace a contact
+      - utter: utter_ask_replace_contact_old_handle
+      - user: "@MaryLu"
+      - slot_was_set:
+          - replace_contact_old_handle: "@MaryLu"
+      - utter: utter_ask_replace_contact_new_handle
+      - user: "@barts"
+      - slot_was_set:
+          - replace_contact_new_handle: "@barts"
+      - utter: utter_ask_replace_contact_new_name
+      - user: "Bart"
+      - slot_was_set:
+          - replace_contact_new_name: "Bart"
+      - utter: utter_ask_replace_contact_confirmation
+      - user: "Yes"
+      - utter: utter_replace_contact_success

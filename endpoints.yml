@@ -1,0 +1,26 @@
+tracker_store:
+  type: custom_components.scrubbing_tracker_store.ScrubbingSQLTrackerStore
+  dialect: postgresql
+  host: ${DB_HOST}
+  port: ${DB_PORT}
+  db: ${DB_NAME}
+  username: ${DB_USERNAME}
+  password: ${DB_PASSWORD}
+
+  sensitive_auth_fields:
+    - access_token
+    - auth_token
+    - id_token
+    - jwt
+    - refresh_token
+
+action_endpoint:
+  actions_module: "actions"
+
+model_groups:
+  - id: openai-gpt-5-1
+    models:
+      - provider: openai
+        model: gpt-5.1-2025-11-13
+        reasoning_effort: "none"
+        timeout: 15
