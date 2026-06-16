@@ -91,6 +91,11 @@ Arguments:
 | `--input` | Input CSV path |
 | `--output` | Output CSV path (parent folders are created automatically) |
 
+The runner always loads the assistant model from the local `--model` path.
+`model_groups` in `endpoints.yml` are still used for LLM configuration.
+Like `rasa test du`, it ignores `tracker_store`, `lock_store`, `event_broker`,
+and `nlg` endpoints to avoid production side effects during evaluation.
+
 ---
 
 ## Example workflow

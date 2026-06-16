@@ -27,7 +27,7 @@ import structlog
 
 from rasa.core.agent import Agent, load_agent
 from rasa.core.channels import CollectingOutputChannel, UserMessage
-from rasa.core.config.available_endpoints import AvailableEndpoints
+from rasa.core.config.configuration import Configuration
 from rasa.core.exceptions import AgentNotReady
 from rasa.dialogue_understanding.patterns.clarify import FLOW_PATTERN_CLARIFICATION
 from rasa.dialogue_understanding.utils import set_record_commands_and_prompts
@@ -65,6 +65,8 @@ OUTPUT_COLUMNS = (
     "latency_seconds",
     "error",
 )
+
+PROGRESS_LOG_EVERY = 100
 
 
 # ── CLI ────────────────────────────────────────────────────────────────────────
@@ -143,7 +145,25 @@ def read_rows(path: Path) -> List[Dict[str, Any]]:
 
 async def setup_agent(model_path: str, endpoints_path: Path) -> Agent:
     """Load and validate the trained CALM agent."""
-    endpoints = AvailableEndpoints.read_endpoints(endpoints_path)
+    structlogger.info(
+        "routing_eval.setup_agent.start",
+        model_path=model_path,
+        endpoints_path=str(endpoints_path),
+    )
+    endpoints = Configuration.initialise_endpoints(
+        endpoints_path=endpoints_path
+    ).endpoints
+    # Mirror `rasa test du`: avoid production side effects when evaluating.
+    endpoints.tracker_store = None
+    endpoints.lock_store = None
+    endpoints.event_broker = None
+    endpoints.nlg = None
+    endpoints.privacy = None
+
+    # This sample only supports local model loading via --model.
+    # Keep model_groups from endpoints.yml for LLM config, but ignore any
+    # model-server endpoint so load_agent does not skip the local model path.
+    endpoints.model = None
 
     async with AgentsConnectionCleanup():
         agent = await load_agent(
@@ -158,6 +178,11 @@ async def setup_agent(model_path: str, endpoints_path: Path) -> Agent:
     if not agent.processor.is_calm_assistant:
         raise AgentNotReady("This runner supports CALM assistants only.")
 
+    structlogger.info(
+        "routing_eval.setup_agent.complete",
+        model_name=agent.model_name,
+        model_id=agent.model_id,
+    )
     return agent
 
 
@@ -255,13 +280,34 @@ async def evaluate_row(agent: Agent, row: Dict[str, Any]) -> Dict[str, Any]:
             )
     except Exception as exc:
         error_message = str(exc)
+        structlogger.error(
+            "routing_eval.evaluate_row.handle_message_failed",
+            test_id=row["test_id"],
+            sender_id=sender_id,
+            user_utterance=row["user_utterance"],
+            error=error_message,
+        )
 
     tracker = await agent.tracker_store.retrieve(sender_id)
+    if tracker is None:
+        structlogger.error(
+            "routing_eval.evaluate_row.tracker_retrieval_failed",
+            test_id=row["test_id"],
+            sender_id=sender_id,
+        )
+
     signals = (
         _extract_signals(list(tracker.events or []))
         if tracker is not None
         else _empty_signals("Tracker retrieval failed.")
     )
+    if signals["error"]:
+        structlogger.warning(
+            "routing_eval.evaluate_row.signal_extraction_warning",
+            test_id=row["test_id"],
+            sender_id=sender_id,
+            error=signals["error"],
+        )
 
     return {
         "test_id": row["test_id"],
@@ -292,9 +338,24 @@ def write_output(path: Path, rows: List[Dict[str, Any]]) -> None:
 
 async def run(args: argparse.Namespace) -> None:
     input_rows = read_rows(Path(args.input))
-    agent = await setup_agent(args.model, Path(args.endpoints))
+    structlogger.info(
+        "routing_eval.start",
+        rows=len(input_rows),
+        input=args.input,
+        output=args.output,
+        model=args.model,
+    )
 
-    results = [await evaluate_row(agent, row) for row in input_rows]
+    agent = await setup_agent(args.model, Path(args.endpoints))
+    results: List[Dict[str, Any]] = []
+    for idx, row in enumerate(input_rows, start=1):
+        results.append(await evaluate_row(agent, row))
+        if idx % PROGRESS_LOG_EVERY == 0 or idx == len(input_rows):
+            structlogger.info(
+                "routing_eval.progress",
+                processed=idx,
+                total=len(input_rows),
+            )
 
     write_output(Path(args.output), results)
     structlogger.info(
