@@ -149,7 +149,6 @@ async def setup_agent(model_path: str, endpoints_path: Path) -> Agent:
         agent = await load_agent(
             model_path=model_path,
             endpoints=endpoints,
-            skip_rephrase_validation=True,
         )
 
     if not agent.is_ready():
