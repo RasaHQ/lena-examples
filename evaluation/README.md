@@ -44,9 +44,11 @@ Compare any of these against your `expected_flow_id` in your own spreadsheet, no
 1. **Rasa Pro 3.16** installed in your environment
 2. A **trained CALM model** (`rasa train`)
 3. Required model/API credentials configured
-4. Custom actions available if your flows call them:
-   - Run `rasa run actions` in another terminal, **or**
-   - Use [stubbed custom actions](https://rasa.com/docs/rasa-pro/production/testing-your-assistant#stubbing-custom-actions) in `endpoints.yml` for faster batch runs
+4. Custom actions available if your flows call them — how this works depends on your `endpoints.yml`:
+   - **In-process actions** (`actions_module: "actions"`) — actions run inside the same Python process, no separate server needed
+   - **HTTP action server** (`url: http://localhost:5055/webhook`) — you need to run `rasa run actions` in another terminal before starting the evaluation
+
+> **Note:** Stubbed custom actions (a `rasa test du` / `rasa test e2e` feature) do not apply here — `run_routing_eval.py` calls `agent.handle_message` directly and does not go through the test runner machinery.
 
 ---
 
