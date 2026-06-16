@@ -21,7 +21,7 @@ import sys
 import time
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import structlog
 
@@ -84,11 +84,6 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--input", required=True, help="Input CSV path.")
     parser.add_argument("--output", required=True, help="Output CSV path.")
-    parser.add_argument(
-        "--remote-storage",
-        default=None,
-        help="Optional remote storage backend for model loading.",
-    )
     return parser.parse_args()
 
 
@@ -146,19 +141,13 @@ def read_rows(path: Path) -> List[Dict[str, Any]]:
 
 # ── Agent setup ────────────────────────────────────────────────────────────────
 
-async def setup_agent(
-    model_path: str,
-    endpoints_path: Path,
-    remote_storage: Optional[str],
-) -> Agent:
+async def setup_agent(model_path: str, endpoints_path: Path) -> Agent:
     """Load and validate the trained CALM agent."""
     endpoints = AvailableEndpoints.read_endpoints(endpoints_path)
 
     async with AgentsConnectionCleanup():
         agent = await load_agent(
             model_path=model_path,
-            model_server=endpoints.model,
-            remote_storage=remote_storage,
             endpoints=endpoints,
             skip_rephrase_validation=True,
         )
@@ -304,7 +293,7 @@ def write_output(path: Path, rows: List[Dict[str, Any]]) -> None:
 
 async def run(args: argparse.Namespace) -> None:
     input_rows = read_rows(Path(args.input))
-    agent = await setup_agent(args.model, Path(args.endpoints), args.remote_storage)
+    agent = await setup_agent(args.model, Path(args.endpoints))
 
     results = [await evaluate_row(agent, row) for row in input_rows]
 

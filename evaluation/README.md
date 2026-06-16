@@ -90,7 +90,6 @@ Arguments:
 | `--endpoints` | Path to `endpoints.yml` (default: `endpoints.yml`) |
 | `--input` | Input CSV path |
 | `--output` | Output CSV path (parent folders are created automatically) |
-| `--remote-storage` | Optional remote model storage backend |
 
 ---
 
@@ -100,7 +99,8 @@ Arguments:
 # 1. Train the assistant
 rasa train
 
-# 2. (Optional) Start custom actions
+# 2. Start custom actions if using an HTTP action server
+#    (not needed if using in-process actions via actions_module in endpoints.yml)
 rasa run actions
 
 # 3. Export routing signals
@@ -117,7 +117,6 @@ python evaluation/run_routing_eval.py \
 ## Notes for large datasets (~100k utterances)
 
 - Watch LLM API rate limits — consider adding retry/back-off logic for large runs
-- Use stubbed custom actions to avoid action-server overhead when you only care about routing
 - Split large input CSVs into batches and concatenate outputs afterward
 
 ---
