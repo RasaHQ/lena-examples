@@ -1,0 +1,13 @@
+recipe: default.v1
+assistant_id: spicy-style
+language: en-US
+# Extra languages the assistant handles. Every key here (plus `language`)
+# must have a matching entry in the ASR/TTS `language_map` in credentials.yml.
+additional_languages:
+  - es-US
+pipeline:
+- name: CompactLLMCommandGenerator
+  llm:
+    model_group: openai-gpt-5-1
+policies:
+- name: FlowPolicy

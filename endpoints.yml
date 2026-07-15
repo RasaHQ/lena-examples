@@ -1,0 +1,10 @@
+action_endpoint:
+  actions_module: "actions"
+
+model_groups:
+  - id: openai-gpt-5-1
+    models:
+      - provider: openai
+        model: gpt-5.1-2025-11-13
+        reasoning_effort: "none"
+        timeout: 15

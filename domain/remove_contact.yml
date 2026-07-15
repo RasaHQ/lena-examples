@@ -1,0 +1,36 @@
+version: "3.1"
+
+actions:
+  - remove_contact
+
+slots:
+  remove_contact_name:
+    type: text
+    mappings:
+      - type: controlled
+  remove_contact_handle:
+    type: text
+    mappings:
+      - type: from_llm
+  remove_contact_confirmation:
+    type: text
+    mappings:
+      - type: from_llm
+
+responses:
+  utter_ask_remove_contact_handle:
+    - text: What's the handle of the contact you'd like to remove?
+  utter_contact_not_in_list:
+    - text: I couldn't find that contact in your list.
+  utter_remove_contact_error:
+    - text: Sorry, something went wrong. Please try again.
+  utter_remove_contact_success:
+    - text: >-
+        Done. I've removed {remove_contact_name},
+        with the handle {remove_contact_handle}, from your contacts.
+  utter_ask_remove_contact_confirmation:
+    - text: >-
+        Shall I remove the contact with the handle {remove_contact_handle}?
+        Please say yes or no.
+  utter_remove_contact_cancelled:
+    - text: Okay, I won't remove that contact.

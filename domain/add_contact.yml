@@ -1,0 +1,37 @@
+version: "3.1"
+
+actions:
+  - add_contact
+
+slots:
+  add_contact_confirmation:
+    type: bool
+    mappings:
+      - type: from_llm
+  add_contact_name:
+    type: text
+    mappings:
+      - type: from_llm
+  add_contact_handle:
+    type: text
+    mappings:
+      - type: from_llm
+
+responses:
+  utter_ask_add_contact_confirmation:
+    - text: >-
+        Just to confirm — shall I add {add_contact_name},
+        with the handle {add_contact_handle}, to your contacts?
+        Please say yes or no.
+  utter_ask_add_contact_handle:
+    - text: What's the handle of the contact you'd like to add?
+  utter_ask_add_contact_name:
+    - text: And what's their name?
+  utter_add_contact_error:
+    - text: Sorry, something went wrong. Please try again.
+  utter_add_contact_cancelled:
+    - text: Okay, I won't add that contact.
+  utter_contact_already_exists:
+    - text: That handle is already in your contacts.
+  utter_contact_added:
+    - text: Done. I've added {add_contact_name} to your contacts.

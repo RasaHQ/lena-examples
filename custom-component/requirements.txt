@@ -1,0 +1,7 @@
+# pip install -r custom-component/requirements.txt
+#
+# rasa-pro pins older protobuf/grpcio; these packages need newer ones.
+# pip will warn about the conflict — it's non-fatal, things still work.
+# Use a dedicated venv if you want a clean dependency tree.
+google-cloud-speech>=2.33.0      # >=2.33 for endpointing_sensitivity
+google-cloud-texttospeech>=2.25.0

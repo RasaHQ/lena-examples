@@ -1,0 +1,16 @@
+version: "3.1"
+
+actions:
+  - list_contacts
+
+slots:
+  contacts_list:
+    type: text
+    mappings:
+      - type: controlled
+
+responses:
+  utter_no_contacts:
+    - text: You don't have any contacts yet.
+  utter_list_contacts:
+    - text: Here are your contacts. {contacts_list}
