@@ -59,8 +59,10 @@ Not exposed, because Rasa's voice pipeline can't use them:
 """
 
 import os
+import time
 from contextlib import AsyncExitStack
-from typing import TYPE_CHECKING, AsyncIterator, Dict, List, Literal, Optional
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any, AsyncIterator, Dict, List, Literal, Optional
 
 import structlog
 import websockets.exceptions
@@ -99,6 +101,7 @@ _NORMAL_CLOSE_CODE = 1000
 _MAX_EMPTY_RECONNECTS = 3
 
 SpeechSensitivity = Literal["high", "low"]
+Location = Literal["global", "us", "eu"]
 
 
 class GeminiASRConfig(ASREngineConfig):
@@ -133,7 +136,7 @@ class GeminiASRConfig(ASREngineConfig):
 
     # Connection
     project_id: Optional[str] = None
-    location: str = "global"
+    location: Location = "global"
 
     # Transcription
     interim_results: bool = True
@@ -176,6 +179,7 @@ class GeminiASR(ASREngine[GeminiASRConfig]):
         self._session: Optional["live.AsyncSession"] = None
         self._session_received_message = False
         self._audio_done = False
+        self._stats = _SessionStats()
 
     # -- Connection lifecycle -------------------------------------------
 
@@ -188,18 +192,40 @@ class GeminiASR(ASREngine[GeminiASRConfig]):
         """
         from google import genai
 
-        client = genai.Client(
-            enterprise=True, project=self._project_id(), location=self.config.location
-        )
-        exit_stack = AsyncExitStack()
-        self._session = await exit_stack.enter_async_context(
-            client.aio.live.connect(
-                model=self.current_language_config.model or DEFAULT_MODEL,
-                config=self._build_live_config(),
+        session_info = self._session_log_info()
+        started = time.monotonic()
+        try:
+            client = genai.Client(
+                enterprise=True,
+                project=self._project_id(),
+                location=self.config.location,
             )
-        )
+            exit_stack = AsyncExitStack()
+            self._session = await exit_stack.enter_async_context(
+                client.aio.live.connect(
+                    model=session_info["model"], config=self._build_live_config()
+                )
+            )
+        except Exception as e:
+            # Google's errors (e.g. "HTTP 404") rarely say which setting is
+            # wrong, so log the settings this session was opened with.
+            structlogger.error(
+                "gemini_asr.session.connect_failed",
+                error=str(e),
+                error_type=type(e).__name__,
+                project_id=self.config.project_id
+                or os.environ.get(GOOGLE_CLOUD_PROJECT_ENV_VAR),
+                **session_info,
+            )
+            raise
         self._exit_stack = exit_stack
         self._audio_done = False
+        self._stats = _SessionStats()
+        structlogger.info(
+            "gemini_asr.session.connected",
+            connect_ms=round((time.monotonic() - started) * 1000),
+            **session_info,
+        )
 
     async def close_connection(self) -> None:
         """Close the session's websocket. Safe to call more than once."""
@@ -235,22 +261,21 @@ class GeminiASR(ASREngine[GeminiASRConfig]):
 
         async with self._get_engine_lock():
             if self._session is None:
-                structlogger.debug(
-                    "gemini_asr.send_audio_chunks.skipped", reason="not_connected"
-                )
+                # Between sessions (reconnect); counted in session.ended.
+                self._stats.dropped_chunks += 1
                 return
+            pcm = self.rasa_audio_bytes_to_engine_bytes(chunk)
             blob = types.Blob(
-                data=self.rasa_audio_bytes_to_engine_bytes(chunk),
+                data=pcm,
                 mime_type=f"audio/pcm;rate={self.audio_format.sample_rate}",
             )
             try:
                 await self._session.send_realtime_input(audio=blob)
-            except websockets.exceptions.ConnectionClosed as e:
+                self._stats.audio_bytes += len(pcm)
+            except websockets.exceptions.ConnectionClosed:
                 # Google ended the session (e.g. the ~10 minute limit). A new
                 # one is opened by stream_asr_events; this chunk is dropped.
-                structlogger.debug(
-                    "gemini_asr.send_audio_chunks.connection_closed", error=str(e)
-                )
+                self._stats.dropped_chunks += 1
 
     # -- Transcripts out ----------------------------------------------------
 
@@ -316,6 +341,7 @@ class GeminiASR(ASREngine[GeminiASRConfig]):
             events.append(UserIsSpeaking(interim))
         final = _transcription_text(content.input_transcription)
         if final:
+            self._stats.final_transcripts += 1
             events.append(NewTranscript(final))
         return events
 
@@ -345,6 +371,9 @@ class GeminiASR(ASREngine[GeminiASRConfig]):
             log("gemini_asr.session.closed", code=e.code, error=str(e))
         except Exception as e:
             structlogger.warning("gemini_asr.session.error", error=str(e))
+        finally:
+            # Also runs when Rasa cancels the task at hangup.
+            self._log_session_ended()
 
     async def _next_session(
         self, ended: "live.AsyncSession"
@@ -363,7 +392,10 @@ class GeminiASR(ASREngine[GeminiASRConfig]):
                 return None
             if self._session is not ended:
                 return self._session
-            structlogger.info("gemini_asr.session.reconnecting")
+            structlogger.info(
+                "gemini_asr.session.reconnecting",
+                received_messages=self._session_received_message,
+            )
             await self.close_connection()
             try:
                 await self.connect()
@@ -371,6 +403,41 @@ class GeminiASR(ASREngine[GeminiASRConfig]):
                 structlogger.error("gemini_asr.session.reconnect_failed", error=str(e))
                 return None
             return self._session
+
+    # -- Logging --------------------------------------------------------------
+
+    def _session_log_info(self) -> Dict[str, Any]:
+        """Return the settings a session is opened with, for log events."""
+        config = self.config
+        vad = {
+            "start_of_speech_sensitivity": config.start_of_speech_sensitivity,
+            "end_of_speech_sensitivity": config.end_of_speech_sensitivity,
+            "prefix_padding_ms": config.prefix_padding_ms,
+            "silence_duration_ms": config.silence_duration_ms,
+        }
+        return {
+            "model": self.current_language_config.model or DEFAULT_MODEL,
+            "location": config.location,
+            "rasa_language": self.current_language_config.rasa_language_key,
+            "language_codes": self._language_codes() or AUTO_LANGUAGE,
+            "sample_rate": self.audio_format.sample_rate,
+            "custom_vocabulary_terms": len(config.custom_vocabulary or []),
+            "voice_activity": {k: v for k, v in vad.items() if v is not None}
+            or "google_defaults",
+        }
+
+    def _log_session_ended(self) -> None:
+        """Log a per-session summary: useful to spot drops and the time limit."""
+        stats = self._stats
+        structlogger.info(
+            "gemini_asr.session.ended",
+            duration_s=round(time.monotonic() - stats.started, 1),
+            audio_sent_s=round(
+                stats.audio_bytes / (2 * self.audio_format.sample_rate), 1
+            ),
+            final_transcripts=stats.final_transcripts,
+            dropped_chunks=stats.dropped_chunks,
+        )
 
     # -- Session config -----------------------------------------------------
 
@@ -474,6 +541,16 @@ class GeminiASR(ASREngine[GeminiASRConfig]):
             config=GeminiASRConfig.model_validate(config),
             additional_languages=additional_languages,
         )
+
+
+@dataclass
+class _SessionStats:
+    """Counters for one Gemini session, logged in ``gemini_asr.session.ended``."""
+
+    started: float = field(default_factory=time.monotonic)
+    audio_bytes: int = 0  # 16-bit PCM actually sent to Gemini
+    final_transcripts: int = 0
+    dropped_chunks: int = 0  # audio that arrived while no session was open
 
 
 def _transcription_text(transcription: Optional["types.Transcription"]) -> str:

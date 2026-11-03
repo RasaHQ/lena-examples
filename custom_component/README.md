@@ -230,11 +230,21 @@ configurable from `credentials.yml`.
 ## Troubleshooting
 
 Problems show up as structured log events. Run Rasa with `--debug` for more
-detail.
+detail. Every call logs two info events from the speech-to-text component that
+are a good first check:
+
+- `gemini_asr.session.connected`: the settings the session was opened with
+  (`model`, `location`, `language_codes`, `voice_activity`, …) and
+  `connect_ms`.
+- `gemini_asr.session.ended`: `duration_s`, `audio_sent_s`,
+  `final_transcripts` and `dropped_chunks` (audio that arrived while no
+  session was open, e.g. during a reconnect).
 
 | Log event / error | Meaning | What to do |
 |---|---|---|
 | `ASRConfigError: Gemini ASR requires a Google Cloud project ID` | No project configured | Set `GOOGLE_CLOUD_PROJECT` or `project_id`. |
+| `gemini_asr.session.connect_failed` (error) | Google refused the session | The event lists the `model`, `location` and `project_id` used. A "Publisher model ... was not found" error means a wrong `model` or an API that isn't enabled. |
+| `ValidationError ... location` at startup | `location` isn't `global`, `us` or `eu` | Fix `location` in `credentials.yml`. |
 | Missing `google.genai` package at startup | The SDK isn't installed | `pip install google-genai` |
 | `gemini_asr.session.reconnecting` (info) | Google closed the session and a new one is opening | Normal about every 10 minutes and after language switches. Frequent occurrences point to network issues. |
 | `gemini_asr.stream_asr_events.giving_up` / `gemini_asr.session.reconnect_failed` | Google keeps rejecting the session | Check credentials, that the API is enabled, `model`, `location` and quota. The preceding warning has Google's error. |
