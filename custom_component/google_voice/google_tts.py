@@ -20,7 +20,6 @@ import contextlib
 from typing import Any, AsyncIterator, Dict, List, Optional
 
 import structlog
-
 from rasa.core.channels.voice_stream.audio_bytes import AudioFormat, RasaAudioBytes
 from rasa.core.channels.voice_stream.tts.config import StreamingConfig
 from rasa.core.channels.voice_stream.tts.tts_engine import (
@@ -98,6 +97,7 @@ class GoogleTTS(TTSEngine[GoogleTTSConfig]):
         config: Optional[GoogleTTSConfig] = None,
         additional_languages: Optional[List[str]] = None,
     ):
+        """Validate the config; the gRPC client is created in ``connect``."""
         super().__init__(rasa_language, format, config, additional_languages)
         self._client: Optional[Any] = None
         self._text_queue: "asyncio.Queue[Optional[str]]" = asyncio.Queue()
@@ -238,9 +238,7 @@ class GoogleTTS(TTSEngine[GoogleTTSConfig]):
             return
         timeout = self.config.timeout
         try:
-            call = self._client.streaming_synthesize(
-                requests=self._request_generator()
-            )
+            call = self._client.streaming_synthesize(requests=self._request_generator())
             stream = await asyncio.wait_for(call, timeout=timeout)
             self._active_call = stream
             structlogger.debug(
