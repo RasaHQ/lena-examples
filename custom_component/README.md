@@ -163,7 +163,9 @@ voice. Pick a TTS voice whose locale matches the entry, e.g.
 exist in every locale.
 
 Set `language: auto` to let Gemini detect the language itself, including
-switches mid-sentence.
+switches mid-sentence. If you know which languages callers mix, list them
+instead, e.g. `language: fr-FR, en-US`; Google recommends hints for best
+accuracy.
 
 ## Configuration reference
 
@@ -171,14 +173,24 @@ switches mid-sentence.
 
 | Field | Default | Description |
 |---|---|---|
-| `language_map` | `en-US` → `gemini-3.5-transcribe-live` | Per Rasa language: `language` (BCP-47 code such as `en-US`, or `auto` to detect automatically) and `model`. |
+| `language_map` | `en-US` → `gemini-3.5-transcribe-live` | Per Rasa language: `language` and `model`. `language` is a BCP-47 code such as `en-US`, several comma-separated codes such as `fr-FR, en-US` for callers who mix languages, or `auto` to detect automatically. |
 | `project_id` | `GOOGLE_CLOUD_PROJECT` | Google Cloud project. Required (set it here or with the env var). |
 | `location` | `global` | `global`, `us` or `eu`. Use the one closest to your callers. |
 | `interim_results` | `true` | Report partial transcripts while the user is talking, so the bot can stop speaking when interrupted (barge-in). |
 | `custom_vocabulary` | none | List of names, products or jargon to recognize more reliably. Up to 1000 terms; Google recommends about 100. |
 | `end_of_speech_sensitivity` | Google default | `high` finalizes sooner after the user stops, `low` waits longer. |
 | `start_of_speech_sensitivity` | Google default | `high` detects speech sooner, `low` ignores more background noise. |
+| `prefix_padding_ms` | Google default | Milliseconds of speech required before the start of speech is detected. Lower reacts faster but is more easily triggered by noise. |
 | `silence_duration_ms` | Google default | Milliseconds of silence before an utterance counts as finished. |
+
+Some Gemini 3.5 Transcribe features aren't available here:
+
+- **`SMART` mode** (filler-word removal and formatting) needs manual
+  endpointing, where the client marks the start and end of each utterance.
+  Rasa's voice pipeline doesn't do that, so the default `VERBATIM` mode is
+  used.
+- **Diarization and word timestamps** exist only in the batch model
+  (`gemini-3.5-transcribe`), not the live one.
 
 ### Text-to-speech (`GoogleTTS`)
 
@@ -203,8 +215,10 @@ settings still help:
    inspector's 48 kHz default.
 2. **`location:`** set to the region nearest your callers and your Rasa
    server.
-3. **End-of-speech tuning** finalizes transcripts sooner:
-   `end_of_speech_sensitivity: high` and/or a lower `silence_duration_ms`.
+3. **Voice-activity tuning** reacts sooner: `end_of_speech_sensitivity: high`
+   and/or a lower `silence_duration_ms` finalize transcripts sooner, and
+   `start_of_speech_sensitivity: high` or a lower `prefix_padding_ms` detect
+   barge-in sooner.
 4. **Keep `interim_results` on** for responsive barge-in.
 5. **Fixed bot responses are cached.** A repeated response from the domain
    plays almost instantly (logged as `cached=True`).
@@ -234,13 +248,13 @@ detail.
   works only with `*-Chirp3-HD-*` voices.
 - **Audio formats.** Gemini accepts any of Rasa's audio formats. TTS supports
   Rasa's 8 kHz μ-law (phone) and 24/48 kHz linear PCM formats.
-- **No Gemini "SMART" formatting mode.** That mode requires the client to mark
-  where each utterance starts and ends. Rasa's voice pipeline doesn't do that,
-  so the component uses Gemini's default verbatim mode.
+- **No Gemini `SMART` mode, diarization or word timestamps.** See
+  [Configuration reference](#speech-to-text-geminiasr).
 - **Gemini voice-activity settings are not documented by Google for this
-  model.** `start_of_speech_sensitivity`, `end_of_speech_sensitivity` and
-  `silence_duration_ms` are generic Gemini Live API settings. Verify their
-  effect before relying on them.
+  model.** `start_of_speech_sensitivity`, `end_of_speech_sensitivity`,
+  `prefix_padding_ms` and `silence_duration_ms` are generic Gemini Live API
+  settings. Google accepts them, but verify their effect before relying on
+  them.
 - **Audio during a reconnect is lost.** While a new session opens (a fraction
   of a second), incoming audio is dropped, so a word spoken exactly then may
   be missed.

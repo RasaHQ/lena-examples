@@ -8,7 +8,7 @@ Copy this one file into your project and reference it in ``credentials.yml``::
       location: us                 # global | us | eu
       language_map:
         en-US:
-          language: en-US          # or "auto" for automatic language detection
+          language: en-US          # "auto", one code, or "fr-FR, en-US"
           model: gemini-3.5-transcribe-live
 
 Requirements: ``pip install google-genai``, Application Default Credentials
@@ -19,13 +19,43 @@ Docs:
     https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/gemini/3-5-transcribe
     https://github.com/GoogleCloudPlatform/generative-ai/blob/main/audio/speech/getting-started/gemini_3_5_transcribe_live.py
 
-How it works: each call opens a transcription-only Gemini Live API session (a
-websocket) with ``client.aio.live.connect``. Rasa's audio is sent as 16-bit PCM
-with ``session.send_realtime_input``. Gemini answers with
-``interim_input_transcription`` (partial text while the user talks, used for
-barge-in) and ``input_transcription`` (final text, which Rasa treats as the
-user's message). Google caps a session at about 10 minutes of audio, so when
-the server closes a session mid-call this component opens a new one.
+How it works
+------------
+Each call opens a transcription-only Gemini Live API session (a websocket)
+with ``client.aio.live.connect``. Rasa's audio is sent as 16-bit PCM with
+``session.send_realtime_input``. Gemini answers with:
+
+- ``voice_activity`` (speech started)     -> ``UserIsSpeaking("")``
+- ``interim_input_transcription`` (partial text while the user talks)
+                                          -> ``UserIsSpeaking(text)``
+- ``input_transcription`` (final text)    -> ``NewTranscript(text)``
+
+``UserIsSpeaking`` lets the bot stop talking when interrupted (barge-in);
+``NewTranscript`` is the user's message. Google caps a session at about 10
+minutes, so when the server closes a session mid-call a new one is opened.
+
+Live model features and where they are configured
+--------------------------------------------------
+=========================  ==================================================
+Gemini feature             ``credentials.yml``
+=========================  ==================================================
+Language hints             ``language_map.<lang>.language``: one code, several
+                           comma-separated codes, or ``auto``
+Automatic detection        ``language: auto`` (or leave ``language`` out)
+Custom vocabulary          ``custom_vocabulary``
+Voice activity detection   ``start_of_speech_sensitivity``,
+                           ``end_of_speech_sensitivity``,
+                           ``prefix_padding_ms``, ``silence_duration_ms``
+Region                     ``location``
+=========================  ==================================================
+
+Not exposed, because Rasa's voice pipeline can't use them:
+
+- ``SMART`` transcription mode: Google requires manual endpointing (the client
+  marks where each utterance starts and ends), which Rasa doesn't do. The
+  default ``VERBATIM`` mode is used.
+- Diarization and word timestamps: only available in the batch model
+  (``gemini-3.5-transcribe``), not in the live one.
 """
 
 import os
@@ -75,9 +105,10 @@ class GeminiASRConfig(ASREngineConfig):
     """Settings for ``GeminiASR``, i.e. the ``asr:`` block in ``credentials.yml``.
 
     Language and model are set per Rasa language in ``language_map``
-    (``language`` / ``model``), like Rasa's built-in ASR engines. Set
-    ``language`` to ``"auto"`` (or leave it out) to let Gemini detect the
-    language, including switches mid-sentence.
+    (``language`` / ``model``), like Rasa's built-in ASR engines. ``language``
+    can be one BCP-47 code (``en-US``), several comma-separated codes
+    (``fr-FR, en-US``) for callers who mix languages, or ``auto`` (or left
+    out) to let Gemini detect the language, including switches mid-sentence.
 
     Attributes:
         project_id: Google Cloud project ID. Falls back to the
@@ -93,16 +124,25 @@ class GeminiASRConfig(ASREngineConfig):
             ignores more background noise.
         end_of_speech_sensitivity: ``high`` finalizes sooner after the user
             stops, ``low`` waits longer.
+        prefix_padding_ms: Milliseconds of speech required before the start
+            of speech is detected. Lower reacts faster but is more easily
+            triggered by noise.
         silence_duration_ms: Milliseconds of silence before an utterance
             counts as finished.
     """
 
+    # Connection
     project_id: Optional[str] = None
     location: str = "global"
+
+    # Transcription
     interim_results: bool = True
     custom_vocabulary: Optional[List[str]] = None
+
+    # Voice activity detection (Google defaults when unset)
     start_of_speech_sensitivity: Optional[SpeechSensitivity] = None
     end_of_speech_sensitivity: Optional[SpeechSensitivity] = None
+    prefix_padding_ms: Optional[int] = None
     silence_duration_ms: Optional[int] = None
 
 
@@ -142,9 +182,9 @@ class GeminiASR(ASREngine[GeminiASRConfig]):
     async def connect(self) -> None:
         """Open a Gemini Live transcription session for the current language.
 
-        ``live.connect`` returns only after Google confirms the session setup,
-        so no audio is sent too early (which Google warns can cancel the
-        session).
+        ``live.connect`` returns only after Google confirms the session setup
+        (``setup_complete``), so no audio is sent too early, which Google warns
+        can cancel the session.
         """
         from google import genai
 
@@ -224,18 +264,20 @@ class GeminiASR(ASREngine[GeminiASRConfig]):
         session = self._session
         if session is None:
             raise ConnectionException("Gemini Live session is not connected.")
-        empty_reconnects = 0
+        empty_sessions_in_a_row = 0
         while session is not None:
             self._session_received_message = False
             async for event in self._session_events(session):
                 yield event
-            empty_reconnects = (
-                0 if self._session_received_message else empty_reconnects + 1
-            )
-            if empty_reconnects > _MAX_EMPTY_RECONNECTS:
+
+            if self._session_received_message:
+                empty_sessions_in_a_row = 0
+            else:
+                empty_sessions_in_a_row += 1
+            if empty_sessions_in_a_row > _MAX_EMPTY_RECONNECTS:
                 structlogger.error(
                     "gemini_asr.stream_asr_events.giving_up",
-                    attempts=empty_reconnects,
+                    attempts=empty_sessions_in_a_row,
                 )
                 return
             session = await self._next_session(session)
@@ -336,25 +378,38 @@ class GeminiASR(ASREngine[GeminiASRConfig]):
         """Build a transcription-only session config (text out, no replies)."""
         from google.genai import types
 
-        language = self.current_language_config.engine_language_key
-        language_codes = [language] if language and language != AUTO_LANGUAGE else None
         return types.LiveConnectConfig(
             response_modalities=[types.Modality.TEXT],
             input_audio_transcription=types.AudioTranscriptionConfig(
-                language_codes=language_codes,
+                language_codes=self._language_codes(),
                 custom_vocabulary=self.config.custom_vocabulary,
             ),
-            realtime_input_config=self._build_realtime_input_config(),
+            realtime_input_config=self._build_voice_activity_config(),
         )
 
-    def _build_realtime_input_config(self) -> Optional["types.RealtimeInputConfig"]:
+    def _language_codes(self) -> Optional[List[str]]:
+        """Return the language hints for the current language.
+
+        ``None`` (no hints) makes Gemini detect the language automatically.
+        """
+        language = self.current_language_config.engine_language_key
+        if not language or language.strip().lower() == AUTO_LANGUAGE:
+            return None
+        return [code.strip() for code in language.split(",") if code.strip()]
+
+    def _build_voice_activity_config(self) -> Optional["types.RealtimeInputConfig"]:
         """Build voice-activity-detection tuning, or ``None`` for Google defaults."""
         from google.genai import types
 
-        start = self.config.start_of_speech_sensitivity
-        end = self.config.end_of_speech_sensitivity
-        silence_ms = self.config.silence_duration_ms
-        if start is None and end is None and silence_ms is None:
+        config = self.config
+        start = config.start_of_speech_sensitivity
+        end = config.end_of_speech_sensitivity
+        if (
+            start is None
+            and end is None
+            and config.prefix_padding_ms is None
+            and config.silence_duration_ms is None
+        ):
             return None
         return types.RealtimeInputConfig(
             automatic_activity_detection=types.AutomaticActivityDetection(
@@ -368,7 +423,8 @@ class GeminiASR(ASREngine[GeminiASRConfig]):
                     if end
                     else None
                 ),
-                silence_duration_ms=silence_ms,
+                prefix_padding_ms=config.prefix_padding_ms,
+                silence_duration_ms=config.silence_duration_ms,
             )
         )
 
