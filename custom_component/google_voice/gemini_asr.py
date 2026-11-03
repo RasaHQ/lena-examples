@@ -1,7 +1,6 @@
 """Gemini 3.5 Transcribe speech-to-text for Rasa voice (single file).
 
-A self-contained Rasa ASR component for Google's Gemini 3.5 Transcribe model.
-Copy this one file into your project and reference it in ``credentials.yml``::
+Copy this file into your project and reference it in ``credentials.yml``::
 
     asr:
       name: custom_component.google_voice.gemini_asr.GeminiASR
@@ -11,51 +10,25 @@ Copy this one file into your project and reference it in ``credentials.yml``::
           language: en-US          # "auto", one code, or "fr-FR, en-US"
           model: gemini-3.5-transcribe-live
 
-Requirements: ``pip install google-genai``, Application Default Credentials
-(e.g. ``gcloud auth application-default login``), and a Google Cloud project
-via ``GOOGLE_CLOUD_PROJECT`` or ``project_id``.
+Requires ``pip install google-genai``, Application Default Credentials, and a
+Google Cloud project via ``GOOGLE_CLOUD_PROJECT`` or ``project_id``.
 
-Docs:
-    https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/gemini/3-5-transcribe
-    https://github.com/GoogleCloudPlatform/generative-ai/blob/main/audio/speech/getting-started/gemini_3_5_transcribe_live.py
+Docs: https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/gemini/3-5-transcribe
 
-How it works
-------------
-Each call opens a transcription-only Gemini Live API session (a websocket)
-with ``client.aio.live.connect``. Rasa's audio is sent as 16-bit PCM with
-``session.send_realtime_input``. Gemini answers with:
+Each call opens a transcription-only Gemini Live session (websocket) and
+streams 16-bit PCM audio. Gemini replies with ``voice_activity`` ->
+``UserIsSpeaking("")``, ``interim_input_transcription`` ->
+``UserIsSpeaking(text)`` (used for barge-in), and ``input_transcription`` ->
+``NewTranscript(text)``. Sessions are capped at about 10 minutes, so a new one
+is opened when the server closes one mid-call.
 
-- ``voice_activity`` (speech started)     -> ``UserIsSpeaking("")``
-- ``interim_input_transcription`` (partial text while the user talks)
-                                          -> ``UserIsSpeaking(text)``
-- ``input_transcription`` (final text)    -> ``NewTranscript(text)``
+Optional ``credentials.yml`` settings: ``custom_vocabulary``,
+``start_of_speech_sensitivity``, ``end_of_speech_sensitivity``,
+``prefix_padding_ms``, ``silence_duration_ms``. ``language: auto`` (or no
+``language``) enables automatic detection.
 
-``UserIsSpeaking`` lets the bot stop talking when interrupted (barge-in);
-``NewTranscript`` is the user's message. Google caps a session at about 10
-minutes, so when the server closes a session mid-call a new one is opened.
-
-Live model features and where they are configured
---------------------------------------------------
-=========================  ==================================================
-Gemini feature             ``credentials.yml``
-=========================  ==================================================
-Language hints             ``language_map.<lang>.language``: one code, several
-                           comma-separated codes, or ``auto``
-Automatic detection        ``language: auto`` (or leave ``language`` out)
-Custom vocabulary          ``custom_vocabulary``
-Voice activity detection   ``start_of_speech_sensitivity``,
-                           ``end_of_speech_sensitivity``,
-                           ``prefix_padding_ms``, ``silence_duration_ms``
-Region                     ``location``
-=========================  ==================================================
-
-Not exposed, because Rasa's voice pipeline can't use them:
-
-- ``SMART`` transcription mode: Google requires manual endpointing (the client
-  marks where each utterance starts and ends), which Rasa doesn't do. The
-  default ``VERBATIM`` mode is used.
-- Diarization and word timestamps: only available in the batch model
-  (``gemini-3.5-transcribe``), not in the live one.
+Not supported: ``SMART`` mode (needs manual endpointing, which Rasa doesn't do;
+``VERBATIM`` is used) and diarization / word timestamps (batch model only).
 """
 
 import os
